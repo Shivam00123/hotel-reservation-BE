@@ -127,7 +127,7 @@ async def getDataFromDB(request:HotelRoomQuery,key:str):
     return rows
 
 async def setDataToCache(rows,key):
-    await redis_client.set(key, json.dumps(rows), ex=6000000)
+    await redis_client.set(key, json.dumps(rows), ex=600)
     return {
         "message": "Data stored successfully",
         "key": key,
@@ -256,7 +256,9 @@ async def getHotelsInlocation(request: HotelRoomQuery):
 
     hotels = await getDataFromCache(key)
 
-    if not hotels:
+    if hotels:
+        await redis_client.expire(key, 600)
+    else:
         await getDataFromDB(request, key)
         hotels = await getDataFromCache(key)
 
